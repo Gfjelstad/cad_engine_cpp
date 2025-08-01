@@ -1,10 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-#include "handler.h"
+#include "listener.h"
+#include "protocol/jsonrpc.h"
 
-using namespace rpc;
+using namespace com;
+using namespace JSONRPC;
 
-TEST_CASE("handle_request correctly processes valid JSON-RPC request") {
+TEST_CASE("handle_request correctly processes valid JSON-RPC request")
+{
     std::string valid_request = R"({
         "jsonrpc": "2.0",
         "method": "render",
@@ -27,7 +30,8 @@ TEST_CASE("handle_request correctly processes valid JSON-RPC request") {
     CHECK(result["echo"]["bar"] == "hello");
 }
 
-TEST_CASE("handle_request returns error for unknown method") {
+TEST_CASE("handle_request returns error for unknown method")
+{
     std::string bad_method_request = R"({
         "jsonrpc": "2.0",
         "method": "unknownMethod",
@@ -46,7 +50,8 @@ TEST_CASE("handle_request returns error for unknown method") {
     CHECK(error["message"].get<std::string>().find("Unknown method") != std::string::npos);
 }
 
-TEST_CASE("handle_request returns error for invalid JSON") {
+TEST_CASE("handle_request returns error for invalid JSON")
+{
     std::string invalid_json = R"({ this is not valid json })";
 
     auto response = handle_request(invalid_json);
@@ -58,4 +63,76 @@ TEST_CASE("handle_request returns error for invalid JSON") {
     auto error = response["error"];
     CHECK(error["code"] == -32603);
     CHECK(error["message"].get<std::string>().length() > 0);
+}
+
+TEST_CASE("JSONRPC::JSONRPCResponse")
+{
+    JSONRPCResponse p;
+
+    auto result = json();
+    result["test"] = 1;
+
+    p.id = "1";
+    p.jsonrpc = "2.0";
+    p.result = result;
+
+    json j = p;
+
+    auto p2 = j.template get<JSONRPCResponse>();
+    CHECK(p2.result["test"] == 1);
+
+    json j2 = p2;
+
+    std::string str = j.dump();
+    std::string str2 = j2.dump();
+
+    CHECK(str == str2);
+}
+TEST_CASE("JSONRPC::JSONRPCError")
+{
+    JSONRPCError::ErrorType e;
+    e.code = "112";
+    e.message = "HELLO";
+
+    JSONRPCError p;
+    p.id = "1";
+    p.jsonrpc = "2.0";
+    p.error = e;
+
+    json j = p;
+
+    auto p2 = j.template get<JSONRPCError>();
+    CHECK(p2.error.message == p.error.message);
+    CHECK(p2.error.code == p.error.code);
+
+    json j2 = p2;
+
+    std::string str = j.dump();
+    std::string str2 = j2.dump();
+
+    CHECK(str == str2);
+}
+
+TEST_CASE("JSONRPC::JSONRPCRequest")
+{
+    auto params = json();
+    params["test"] = 1;
+
+    JSONRPCRequest p;
+    p.id = "1";
+    p.jsonrpc = "2.0";
+    p.method = "method";
+    p.params = params;
+
+    json j = p;
+
+    auto p2 = j.template get<JSONRPCRequest>();
+    CHECK(p2.params["test"] == 1);
+
+    json j2 = p2;
+
+    std::string str = j.dump();
+    std::string str2 = j2.dump();
+
+    CHECK(str == str2);
 }

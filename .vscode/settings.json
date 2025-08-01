@@ -63,6 +63,20 @@
     "thread": "cpp",
     "typeindex": "cpp",
     "typeinfo": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "*.lxx": "cpp",
+    "any": "cpp",
+    "codecvt": "cpp",
+    "complex": "cpp",
+    "csignal": "cpp",
+    "forward_list": "cpp",
+    "optional": "cpp",
+    "regex": "cpp",
+    "ranges": "cpp",
+    "shared_mutex": "cpp",
+    "span": "cpp",
+    "cfenv": "cpp",
+    "valarray": "cpp",
+    "xstring": "cpp"
   }
 }

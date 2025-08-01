@@ -1,5 +1,5 @@
 add_library(nodus_rpc_handler STATIC
-    handler.cpp
+    listener.cpp
 )
 
 target_include_directories(nodus_rpc_handler PUBLIC
