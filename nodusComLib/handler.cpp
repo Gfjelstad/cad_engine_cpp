@@ -4,11 +4,6 @@
 
 using namespace JSONRPC;
 
-void RPCHandler::OnRequestHandler(RequestFunctionType &function)
-{
-    _onRequest = function;
-}
-
 void RPCHandler::SendMessage(std::string method, nlohmann::json params, ResponseFunctionType onResponse, ErrorFunctionType onError)
 {
     JSONRPCRequest request;
@@ -53,19 +48,16 @@ void RPCHandler::handleMessage(const nlohmann::json &j)
     {
         // Likely a JSON-RPC Request
         JSONRPCRequest req = j.get<JSONRPCRequest>();
-        if (_onRequest != nullptr)
-        {
-            int id = req.id;
-            nlohmann::json result = _onRequest(req.method, req.params);
+        int id = req.id;
+        nlohmann::json result = RequestHandler(req.method, req.params);
 
-            JSONRPCResponse response;
-            response.jsonrpc = "2.0";
-            response.id = id;
-            response.result = result;
-            nlohmann::json r = response;
-            std::string strresponse = r.dump();
-            _transporter->sendMessage(strresponse);
-        }
+        JSONRPCResponse response;
+        response.jsonrpc = "2.0";
+        response.id = id;
+        response.result = result;
+        nlohmann::json r = response;
+        std::string strresponse = r.dump();
+        _transporter->sendMessage(strresponse);
     }
     else if (j.contains("result"))
     {

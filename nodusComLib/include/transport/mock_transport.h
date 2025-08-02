@@ -9,19 +9,11 @@
 class MockTransport : public ITransport
 {
 public:
-    MockTransport(std::vector<std::string> messages, std::vector<std::string> *output = nullptr) : ITransport()
+    MockTransport(std::vector<std::string> messages, std::shared_ptr<std::vector<std::string>> output = nullptr) : ITransport()
     {
         _messages = messages;
         _output = output;
         _connected = true;
-    }
-
-    ~MockTransport()
-    {
-        if (_output != nullptr)
-        {
-            delete _output;
-        }
     }
 
     virtual std::string recieveMessage() override
@@ -48,7 +40,7 @@ public:
     };
     size_t current_ = 0;
     std::vector<std::string> _messages;
-    std::vector<std::string> *_output;
+    std::shared_ptr<std::vector<std::string>> _output;
 };
 
 #endif

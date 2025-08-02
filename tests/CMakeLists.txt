@@ -1,17 +1,25 @@
-add_executable(nodus_rpc_tests 
-    test_handler.cpp
+function(add_nodus_test name)
+    add_executable(${name} ${ARGN})
+
+    target_include_directories(${name} PRIVATE
+        "${CMAKE_SOURCE_DIR}/external/doctest"
+    )
+
+    target_link_libraries(${name} PRIVATE
+        nodus_rpc_handler
+        nodus_core
+        opencascade_wrapper
+    )
+
+    add_test(NAME ${name} COMMAND ${name})
+endfunction()
+
+add_nodus_test(json_rpc_tests
+    json_rpc_tests.cpp
 )
-
-
-
-target_include_directories(nodus_rpc_tests PRIVATE
-    "${CMAKE_SOURCE_DIR}/external/doctest"
+add_nodus_test(rpc_handler_tests
+    rpc_handler_tests.cpp
 )
-
-target_link_libraries(nodus_rpc_tests PRIVATE
-nodus_rpc_handler
-# nodus_cad_core
+add_nodus_test(nodus_integration_tests
+    nodus_integration_tests.cpp
 )
-
-# Register tests with CTest
-add_test(NAME rpc_handler_tests COMMAND nodus_rpc_tests)

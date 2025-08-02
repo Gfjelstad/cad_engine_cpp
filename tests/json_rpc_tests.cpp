@@ -4,47 +4,7 @@
 #include "protocol/jsonrpc.h"
 #include "transport/mock_transport.h"
 #include <iostream>
-// using namespace com;
 using namespace JSONRPC;
-
-TEST_CASE("RPCHandler correctly processes valid JSON-RPC request")
-{
-    std::string valid_request = R"({
-        "jsonrpc": "2.0",
-        "method": "render",
-        "params": { "foo": 123, "bar": "hello" },
-        "id": 42
-    })";
-    std::vector<std::string> messages = {valid_request};
-    std::vector<std::string> output = {};
-    std::unique_ptr<ITransport> transport = std::make_unique<MockTransport>(messages, &output);
-    auto handler = RPCHandler(std::move(transport));
-
-    class TestRequestHandler
-    {
-    public:
-        nlohmann::json handleRequest(std::string method, nlohmann::json params)
-        {
-            CHECK(method == "render");
-            std::printf(params.dump().c_str());
-            nlohmann::json result;
-            result["worked"] = true;
-            return result;
-        }
-    };
-
-    auto reqhandler = TestRequestHandler();
-    RequestFunctionType h = [&reqhandler](std::string method, const nlohmann::json &params)
-    {
-        return reqhandler.handleRequest(method, params);
-    };
-
-    handler.OnRequestHandler(h);
-
-    handler.Listen();
-
-    CHECK(output.size() == 1);
-}
 
 TEST_CASE("JSONRPC::JSONRPCResponse")
 {
