@@ -1,3 +1,6 @@
+#ifndef ITransport_H
+#define ITransport_H
+
 #include <iostream>
 class ITransport
 {
@@ -9,3 +12,5 @@ public:
 
     bool _connected = false;
 };
+
+#endif

@@ -1,8 +1,11 @@
+#ifndef StdInTransport_H
+#define StdInTransport_H
+
 #include "transport_interface.h"
 #include <iostream>
 
 /// @brief standard in message transporting
-class StdInTransport : ITransport
+class StdInTransport : public ITransport
 {
 public:
     StdInTransport()
@@ -16,3 +19,4 @@ public:
 
     virtual bool isConnected() override;
 };
+#endif

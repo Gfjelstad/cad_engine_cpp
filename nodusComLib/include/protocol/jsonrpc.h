@@ -1,3 +1,7 @@
+
+#ifndef JSON_RPC_TYPES_HPP
+#define JSON_RPC_TYPES_HPP
+
 #include "nlohmann/json.hpp"
 #include <iostream>
 
@@ -7,10 +11,10 @@ namespace JSONRPC
 {
     struct JSONRPCBase
     {
-        std::string id;
-        std::string jsonrpc;
+        int id;
+        std::string jsonrpc = "2.0";
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(JSONRPCBase, id, jsonrpc);
+        // NLOHMANN_DEFINE_TYPE_INTRUSIVE(JSONRPCBase, id, jsonrpc);
     };
 
     struct JSONRPCRequest : JSONRPCBase
@@ -18,7 +22,7 @@ namespace JSONRPC
         std::string method;
         nlohmann::json params;
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(JSONRPCRequest, method, params);
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(JSONRPCRequest, method, params, id, jsonrpc);
     };
     struct JSONRPCError : JSONRPCBase
     {
@@ -31,12 +35,14 @@ namespace JSONRPC
         };
         ErrorType error;
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(JSONRPCError, error);
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(JSONRPCError, error, id, jsonrpc);
     };
     struct JSONRPCResponse : JSONRPCBase
     {
         nlohmann::json result;
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(JSONRPCResponse, result);
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(JSONRPCResponse, result, id, jsonrpc);
     };
 };
+
+#endif

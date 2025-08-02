@@ -1,12 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-#include "listener.h"
+#include "handler.h"
 #include "protocol/jsonrpc.h"
-
-using namespace com;
+#include "transport/mock_transport.h"
+#include <iostream>
+// using namespace com;
 using namespace JSONRPC;
 
-TEST_CASE("handle_request correctly processes valid JSON-RPC request")
+TEST_CASE("RPCHandler correctly processes valid JSON-RPC request")
 {
     std::string valid_request = R"({
         "jsonrpc": "2.0",
@@ -14,55 +15,35 @@ TEST_CASE("handle_request correctly processes valid JSON-RPC request")
         "params": { "foo": 123, "bar": "hello" },
         "id": 42
     })";
+    std::vector<std::string> messages = {valid_request};
+    std::vector<std::string> output = {};
+    std::unique_ptr<ITransport> transport = std::make_unique<MockTransport>(messages, &output);
+    auto handler = RPCHandler(std::move(transport));
 
-    auto response = handle_request(valid_request);
+    class TestRequestHandler
+    {
+    public:
+        nlohmann::json handleRequest(std::string method, nlohmann::json params)
+        {
+            CHECK(method == "render");
+            std::printf(params.dump().c_str());
+            nlohmann::json result;
+            result["worked"] = true;
+            return result;
+        }
+    };
 
-    auto id = response["id"];
-    auto dumped = response.dump();
+    auto reqhandler = TestRequestHandler();
+    RequestFunctionType h = [&reqhandler](std::string method, const nlohmann::json &params)
+    {
+        return reqhandler.handleRequest(method, params);
+    };
 
-    CHECK(response["jsonrpc"] == "2.0");
-    CHECK(response["id"] == 42);
-    CHECK(response.contains("result"));
+    handler.OnRequestHandler(h);
 
-    auto result = response["result"];
-    CHECK(result["status"] == "ok");
-    CHECK(result["echo"]["foo"] == 123);
-    CHECK(result["echo"]["bar"] == "hello");
-}
+    handler.Listen();
 
-TEST_CASE("handle_request returns error for unknown method")
-{
-    std::string bad_method_request = R"({
-        "jsonrpc": "2.0",
-        "method": "unknownMethod",
-        "params": {},
-        "id": 100
-    })";
-
-    auto response = handle_request(bad_method_request);
-
-    CHECK(response["jsonrpc"] == "2.0");
-    CHECK(response["id"].is_null()); // error returns null id
-    CHECK(response.contains("error"));
-
-    auto error = response["error"];
-    CHECK(error["code"] == -32603);
-    CHECK(error["message"].get<std::string>().find("Unknown method") != std::string::npos);
-}
-
-TEST_CASE("handle_request returns error for invalid JSON")
-{
-    std::string invalid_json = R"({ this is not valid json })";
-
-    auto response = handle_request(invalid_json);
-
-    CHECK(response["jsonrpc"] == "2.0");
-    CHECK(response["id"].is_null());
-    CHECK(response.contains("error"));
-
-    auto error = response["error"];
-    CHECK(error["code"] == -32603);
-    CHECK(error["message"].get<std::string>().length() > 0);
+    CHECK(output.size() == 1);
 }
 
 TEST_CASE("JSONRPC::JSONRPCResponse")
@@ -72,7 +53,7 @@ TEST_CASE("JSONRPC::JSONRPCResponse")
     auto result = json();
     result["test"] = 1;
 
-    p.id = "1";
+    p.id = 1;
     p.jsonrpc = "2.0";
     p.result = result;
 
@@ -95,7 +76,7 @@ TEST_CASE("JSONRPC::JSONRPCError")
     e.message = "HELLO";
 
     JSONRPCError p;
-    p.id = "1";
+    p.id = 1;
     p.jsonrpc = "2.0";
     p.error = e;
 
@@ -119,12 +100,13 @@ TEST_CASE("JSONRPC::JSONRPCRequest")
     params["test"] = 1;
 
     JSONRPCRequest p;
-    p.id = "1";
+    p.id = 1;
     p.jsonrpc = "2.0";
     p.method = "method";
     p.params = params;
 
     json j = p;
+    std::string checkstr = j.dump();
 
     auto p2 = j.template get<JSONRPCRequest>();
     CHECK(p2.params["test"] == 1);
