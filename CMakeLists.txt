@@ -11,9 +11,13 @@ enable_testing()
 
 add_subdirectory(external)
 
+
+
 add_subdirectory(nodusComLib)
 add_subdirectory(nodusCoreLib)
 add_subdirectory(nodus)
 
 enable_testing()
 add_subdirectory(tests)
+
+# setup_opencascade_dlls(nodus_app)

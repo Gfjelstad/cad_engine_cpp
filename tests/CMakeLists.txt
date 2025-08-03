@@ -1,5 +1,6 @@
 function(add_nodus_test name)
     add_executable(${name} ${ARGN})
+    link_opencascade_dlls(${name})
 
     target_include_directories(${name} PRIVATE
         "${CMAKE_SOURCE_DIR}/external/doctest"
@@ -12,6 +13,7 @@ function(add_nodus_test name)
     )
 
     add_test(NAME ${name} COMMAND ${name})
+    
 endfunction()
 
 add_nodus_test(json_rpc_tests
@@ -23,3 +25,4 @@ add_nodus_test(rpc_handler_tests
 add_nodus_test(nodus_integration_tests
     nodus_integration_tests.cpp
 )
+

@@ -10,3 +10,5 @@ target_link_libraries(nodus_core PUBLIC
     opencascade_wrapper
     nlohmann_json::nlohmann_json
 )
+
+link_opencascade_dlls(nodus_core)

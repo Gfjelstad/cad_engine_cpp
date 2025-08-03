@@ -1,11 +1,10 @@
-#ifndef LineNode_H
-#define LineNode_H
+#ifndef SketchNode_H
+#define SketchNode_H
 
 #include "geometry/Node.h"
 #include "nlohmann/json.hpp"
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Edge.hxx>
-#include <vector>
 // #include "gp_Pnt.hxx"
 #include "primatives/gp_conversion.h"
 
@@ -14,7 +13,7 @@ using namespace nlohmann;
 namespace nodus::core::geometry
 {
 
-    class LineNode : public Node<TopoDS_Shape>
+    class SketchNode : public Node<TopoDS_Shape>
     {
     private:
         // members
@@ -43,9 +42,9 @@ namespace nodus::core::geometry
         };
 
     public:
-        LineNode(nlohmann::json &params);
-        LineNode(LineParamsStartEnd &params);
-        LineNode(LineParams2dStartEnd &params);
+        SketchNode(nlohmann::json &params, std::vector<TopoDS_Shape> children);
+        SketchNode(LineParamsStartEnd &params, std::vector<TopoDS_Shape> children);
+        // LineNode(LineParams2dStartEnd &params);
 
         TopoDS_Shape Build();
     };

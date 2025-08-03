@@ -9,7 +9,8 @@ using json = nlohmann::json;
 
 int main()
 {
-    std::cout << "HELLOOOOO" << std::endl;
+    std::cout << "Program started!" << std::endl;
+    // std::cin.get(); // This will keep the window open
     std::string valid_request = R"({
         "start": [0,0,0],
         "end": [1,1,1]

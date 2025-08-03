@@ -1,12 +1,14 @@
 #include "geometry/LineNode.h"
 
-#include <BRepBuilderAPI_MakeEdge.hxx>
+#include "BRepBuilderAPI_MakeEdge.hxx"
+#include "gp_Pnt.hxx"
 
 namespace nodus::core::geometry
 {
 
-    LineNode::LineNode(nlohmann::json &params) : Node()
+    LineNode::LineNode(nlohmann::json &params)
     {
+        auto point = gp_Pnt(1, 1, 1);
         auto [success1, startEndParams] = try_convert_json<LineNode::LineParamsStartEnd>(params);
         if (success1)
         {
@@ -30,9 +32,29 @@ namespace nodus::core::geometry
 
         edge_ = edgeBuilder.Edge();
     }
-    int LineNode::Build()
+
+    LineNode::LineNode(LineParams2dStartEnd &params)
     {
-        return 1;
+        auto getPoint = [params](std::pair<double, double> pt)
+        {
+            gp_Vec scaledXVec = params.xvector * pt.first;
+            double xdir[3] = {scaledXVec.X(), scaledXVec.Y(), scaledXVec.Z()};
+            gp_Vec scaledYVec = params.yvector * pt.second;
+
+            auto combined = scaledYVec + scaledXVec;
+            auto point = gp_Pnt(combined.X(), combined.Y(), combined.Z());
+            return point;
+        };
+
+        LineParamsStartEnd newparams;
+        newparams.start = getPoint(params.start);
+        newparams.end = getPoint(params.end);
+        *this = LineNode(newparams);
+    }
+
+    TopoDS_Shape LineNode::Build()
+    {
+        return edge_;
     }
 
 }
