@@ -2,6 +2,8 @@
 #define Node_H
 
 #include "nlohmann/json.hpp"
+#include <gp_Ax3.hxx>
+#include <TopoDS_Shape.hxx>
 
 namespace nodus::core::geometry
 {
@@ -28,19 +30,44 @@ namespace nodus::core::geometry
         }
     }
 
-    // template<typename T>
-    // constexpr bool can_convert_from_json_v = can_convert_from_json<T>::value;
-
-    template <typename NodeResult>
     class Node
     {
-    private:
+    protected:
         /* data */
-    public:
-        Node() = default;
+        std::string _id;
+        std::shared_ptr<Node> _parent;
+        std::vector<std::shared_ptr<Node>> _children;
+        nlohmann::json _params;
 
-        virtual NodeResult Build() = 0;
-        ~Node() {};
+    public:
+        Node(nlohmann::json params, std::shared_ptr<Node> parent)
+        {
+            params.at("id").get_to(_id);
+            _params = params;
+            _parent = parent;
+        };
+        virtual ~Node() = default;
+
+        void SetChildren(std::vector<std::shared_ptr<Node>> children)
+        {
+            _children = children;
+        }
+
+        std::string GetId()
+        {
+            return _id;
+        }
+
+        virtual gp_Ax3 GetOrigin()
+        {
+            if (_parent == nullptr)
+            {
+                return gp_Ax3();
+            }
+            return _parent->GetOrigin();
+        }
+
+        virtual TopoDS_Shape Build() = 0;
     };
-};
+}
 #endif

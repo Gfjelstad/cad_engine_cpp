@@ -6,22 +6,24 @@
 namespace nodus::core::geometry
 {
 
-    LineNode::LineNode(nlohmann::json &params)
+    TopoDS_Shape LineNode::Build()
     {
-        auto point = gp_Pnt(1, 1, 1);
-        auto [success1, startEndParams] = try_convert_json<LineNode::LineParamsStartEnd>(params);
+        auto [success1, startEndParams] = try_convert_json<LineNode::LineParamsStartEnd>(_params);
+        auto [success2, start2dEndParams] = try_convert_json<LineNode::LineParams2dStartEnd>(_params);
         if (success1)
         {
-            *this = LineNode(startEndParams);
-            return;
+            return Build(startEndParams);
+        }
+        else if (success2)
+        {
+            return Build(start2dEndParams);
         }
         else
         {
             throw std::invalid_argument("JSON does not match any known LineNode parameter structure");
         }
     }
-
-    LineNode::LineNode(LineParamsStartEnd &params)
+    TopoDS_Shape LineNode::Build(LineParamsStartEnd &params)
     {
         BRepBuilderAPI_MakeEdge edgeBuilder(params.start, params.end);
 
@@ -30,16 +32,20 @@ namespace nodus::core::geometry
             throw std::runtime_error("Failed to create line edge from start and end points");
         }
 
-        edge_ = edgeBuilder.Edge();
+        return edgeBuilder.Edge();
     }
 
-    LineNode::LineNode(LineParams2dStartEnd &params)
+    TopoDS_Shape LineNode::Build(LineParams2dStartEnd &params)
     {
-        auto getPoint = [params](std::pair<double, double> pt)
+        auto origin = GetOrigin();
+
+        auto getPoint = [origin](std::pair<double, double> pt)
         {
-            gp_Vec scaledXVec = params.xvector * pt.first;
-            double xdir[3] = {scaledXVec.X(), scaledXVec.Y(), scaledXVec.Z()};
-            gp_Vec scaledYVec = params.yvector * pt.second;
+            gp_Vec xdir = origin.XDirection();
+            gp_Vec ydir = origin.YDirection();
+
+            gp_Vec scaledXVec = xdir * pt.first;
+            gp_Vec scaledYVec = ydir * pt.second;
 
             auto combined = scaledYVec + scaledXVec;
             auto point = gp_Pnt(combined.X(), combined.Y(), combined.Z());
@@ -49,12 +55,6 @@ namespace nodus::core::geometry
         LineParamsStartEnd newparams;
         newparams.start = getPoint(params.start);
         newparams.end = getPoint(params.end);
-        *this = LineNode(newparams);
+        return Build(newparams);
     }
-
-    TopoDS_Shape LineNode::Build()
-    {
-        return edge_;
-    }
-
 }

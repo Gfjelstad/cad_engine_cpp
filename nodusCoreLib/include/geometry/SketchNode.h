@@ -13,40 +13,26 @@ using namespace nlohmann;
 namespace nodus::core::geometry
 {
 
-    class SketchNode : public Node<TopoDS_Shape>
+    class SketchNode : public Node
     {
     private:
         // members
-        TopoDS_Edge edge_;
+        gp_Ax3 _origin;
 
     public:
-        // members
-        struct LineParamsStartEnd
+        struct SketchWithOrigin
         {
-            gp_Pnt start;
-            gp_Pnt end;
-            // int start;
-            // int end;
+            gp_Ax3 origin; // XY of the origin axis is always XY on the sketch. to change, send in a different axis
 
-            NLOHMANN_DEFINE_TYPE_INTRUSIVE(LineParamsStartEnd, start, end);
-        };
-
-        struct LineParams2dStartEnd
-        {
-            std::pair<double, double> start;
-            std::pair<double, double> end;
-            gp_Vec xvector;
-            gp_Vec yvector;
-
-            NLOHMANN_DEFINE_TYPE_INTRUSIVE(LineParams2dStartEnd, start, end, xvector, yvector);
+            NLOHMANN_DEFINE_TYPE_INTRUSIVE(SketchWithOrigin, origin);
         };
 
     public:
-        SketchNode(nlohmann::json &params, std::vector<TopoDS_Shape> children);
-        SketchNode(LineParamsStartEnd &params, std::vector<TopoDS_Shape> children);
-        // LineNode(LineParams2dStartEnd &params);
+        SketchNode(nlohmann::json params, std::shared_ptr<Node> parent);
 
-        TopoDS_Shape Build();
+        TopoDS_Shape Build() override;
+
+        virtual gp_Ax3 GetOrigin() override;
     };
 
 };

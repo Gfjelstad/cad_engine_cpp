@@ -10,13 +10,13 @@ function(link_opencascade_dlls target_name)
     )
     # 3rd party DLLs
     file(GLOB_RECURSE THIRD_PARTY_DLLS_TBB
-        "${OPENCASCADE_ROOT}/3rdparty-vc14-64/tbb*/bin/*.dll"
+        "${OPENCASCADE_ROOT}/3rdparty-vc14-64/*/bin/*.dll"
     )
-    file(GLOB_RECURSE THIRD_PARTY_DLLS_JEMALLOC
-        "${OPENCASCADE_ROOT}/3rdparty-vc14-64/jemalloc*/bin/*.dll"
-    )
+    # file(GLOB_RECURSE THIRD_PARTY_DLLS_JEMALLOC
+    #     "${OPENCASCADE_ROOT}/3rdparty-vc14-64/jemalloc*/bin/*.dll"
+    # )
 
-    set(ALL_DLLS ${OCCT_DLLS} ${THIRD_PARTY_DLLS_TBB} ${THIRD_PARTY_DLLS_JEMALLOC})
+    set(ALL_DLLS ${OCCT_DLLS} ${THIRD_PARTY_DLLS_TBB})
 
     list(REMOVE_DUPLICATES ALL_DLLS)
 
@@ -105,4 +105,7 @@ target_link_libraries(opencascade_wrapper INTERFACE
     TKG3d            # Required for 3D geometry
     TKBO             # Required for boolean operations
     TKPrim           # Required for primitive operations
+    TKDESTEP        
+    TKDESTL        
+    TKMesh    
 )

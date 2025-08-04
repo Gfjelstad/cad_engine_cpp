@@ -14,7 +14,7 @@ using namespace nlohmann;
 namespace nodus::core::geometry
 {
 
-    class LineNode : public Node<TopoDS_Shape>
+    class LineNode : public Node
     {
     private:
         // members
@@ -36,18 +36,17 @@ namespace nodus::core::geometry
         {
             std::pair<double, double> start;
             std::pair<double, double> end;
-            gp_Vec xvector;
-            gp_Vec yvector;
 
-            NLOHMANN_DEFINE_TYPE_INTRUSIVE(LineParams2dStartEnd, start, end, xvector, yvector);
+            NLOHMANN_DEFINE_TYPE_INTRUSIVE(LineParams2dStartEnd, start, end);
         };
 
     public:
-        LineNode(nlohmann::json &params);
-        LineNode(LineParamsStartEnd &params);
-        LineNode(LineParams2dStartEnd &params);
+        using Node::Node;
+        // LineNode(nlohmann::json &params);
 
-        TopoDS_Shape Build();
+        TopoDS_Shape Build() override;
+        TopoDS_Shape Build(LineParamsStartEnd &params);
+        TopoDS_Shape Build(LineParams2dStartEnd &params);
     };
 
 };

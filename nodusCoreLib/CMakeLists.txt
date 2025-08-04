@@ -1,5 +1,7 @@
 add_library(nodus_core STATIC
     geometry/LineNode.cpp
+    geometry/SketchNode.cpp
+    geometry/ExtrudeNode.cpp
 )
 
 target_include_directories(nodus_core PUBLIC

@@ -25,4 +25,7 @@ add_nodus_test(rpc_handler_tests
 add_nodus_test(nodus_integration_tests
     nodus_integration_tests.cpp
 )
+add_nodus_test(nodus_core_test_primatives
+    nodus_core_test_primatives.cpp
+)
 

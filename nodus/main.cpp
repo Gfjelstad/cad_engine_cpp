@@ -20,7 +20,7 @@ int main()
 
     auto point = gp_Pnt(1, 1, 1);
 
-    auto line = nodus::core::geometry::LineNode(j);
+    // auto line = nodus::core::geometry::LineNode(j);
 
     // auto linegeometry = line.Build();
     // std::string line;
