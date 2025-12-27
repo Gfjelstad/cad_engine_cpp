@@ -48,7 +48,7 @@ namespace nodus::core::geometry
             gp_Vec scaledYVec = ydir * pt.second;
 
             auto combined = scaledYVec + scaledXVec;
-            auto point = gp_Pnt(combined.X(), combined.Y(), combined.Z());
+            auto point = origin.Location().Translated(combined);
             return point;
         };
 

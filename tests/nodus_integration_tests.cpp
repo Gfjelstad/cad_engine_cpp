@@ -8,9 +8,12 @@
 #include <TopoDS_Compound.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopExp.hxx>
 #include <StlAPI_Writer.hxx>
 #include <TopoDS.hxx>
 #include <iostream>
+#include "Model.h"
 #include "geometry/LineNode.h"
 #include "geometry/SketchNode.h"
 #include "geometry/ExtrudeNode.h"
@@ -95,46 +98,120 @@ TEST_CASE("Nodus Test creating line from jsons")
 TEST_CASE("Nodus correctly processes valid extrusion")
 {
     std::string valid_request = R"({
-        "jsonrpc": "2.0",
-        "method": "render",
-        "params": {
-        "type": "Extrude",
+        "type": "extrude",
         "props": {
             "id": "extrude1",
-            "direction": [0, 0, 1],
-            "distance": 3.0
+            "length": 20.0
         },
         "children": [
             {
-            "type": "Sketch",
+            "type": "sketch",
             "props": {
-                "plane": "XY"
+                "id": "sketch1",
+                "origin": {
+                    "location":[0,0,0],
+                    "direction":[0,0,1]
+                    }
             },
             "children": [
                 {
-                "type": "Line",
-                "props": { start: [0, 0], end: [2, 0] },
+                "type": "line",
+                "props": { "id": "line1","start": [0, 0], "end": [20, 0] },
                 "children": []
                 },
                 {
-                "type": "Line",
-                "props": { start: [2, 0], end: [2, 2] },
+                "type": "line",
+                "props": { "id": "line2","start": [20, 0], "end": [20, 20] },
                 "children": []
                 },
                 {
-                "type": "Line",
-                "props": { start: [2, 2], end: [0, 2] },
+                "type": "line",
+                "props": { "id": "line3","start": [20, 20], "end": [0, 20] },
                 "children": []
                 },
                 {
-                "type": "Line",
-                "props": { start: [0, 2], end: [0, 0] },
+                "type": "line",
+                "props": { "id": "line4","start": [0, 20], "end": [0, 0] },
+                "children": []
+                }
+            ]
+            },
+            {
+            "type": "sketch",
+            "props": {
+                "id": "sketch1",
+                "origin": {
+                    "location":[0,45,0],
+                    "direction":[0,0,1]
+                    }
+            },
+            "children": [
+                {
+                "type": "line",
+                "props": { "id": "line1","start": [0, 0], "end": [20, 0] },
+                "children": []
+                },
+                {
+                "type": "line",
+                "props": { "id": "line2","start": [20, 0], "end": [20, 20] },
+                "children": []
+                },
+                {
+                "type": "line",
+                "props": { "id": "line3","start": [20, 20], "end": [0, 20] },
+                "children": []
+                },
+                {
+                "type": "line",
+                "props": { "id": "line4","start": [0, 20], "end": [0, 0] },
                 "children": []
                 }
             ]
             }
         ]
-        },
-        "id": 42
-    })";
+        })";
+
+    auto model = Model(json::parse(valid_request));
+    auto shape = model.Render();
+
+    BRepCheck_Analyzer analyzer(shape);
+    if (!analyzer.IsValid())
+    {
+        std::cout << "Shape is not valid!" << std::endl;
+        // Don't write invalid shapes to STEP
+        return;
+    }
+
+    TopTools_IndexedMapOfShape vertices, edges, faces, solids, shells, wires;
+    TopExp::MapShapes(shape, TopAbs_VERTEX, vertices);
+    TopExp::MapShapes(shape, TopAbs_EDGE, edges);
+    TopExp::MapShapes(shape, TopAbs_FACE, faces);
+    TopExp::MapShapes(shape, TopAbs_SOLID, solids);
+    TopExp::MapShapes(shape, TopAbs_SHELL, shells);
+    TopExp::MapShapes(shape, TopAbs_WIRE, wires);
+
+    // STEP format (recommended)
+    Interface_Static::SetCVal("write.step.schema", "AP203");
+    STEPControl_Writer stepWriter;
+    IFSelect_ReturnStatus status = stepWriter.Transfer(shape, STEPControl_ManifoldSolidBrep);
+    if (status != IFSelect_RetDone)
+    {
+        throw std::runtime_error("Failed to transfer shape to STEP writer");
+    }
+
+    std::string outputPath = "C:\\Users\\grant\\Documents\\modelTest.step";
+    status = stepWriter.Write(outputPath.c_str());
+    if (status != IFSelect_RetDone)
+    {
+        throw std::runtime_error("Failed to write STEP file");
+    }
+
+    BRepMesh_IncrementalMesh mesh(shape, 0.1);
+    mesh.Perform();
+
+    StlAPI_Writer stlWriter;
+    std::string outputPathstl = "C:\\Users\\grant\\Documents\\modelTest.stl";
+    stlWriter.Write(shape, outputPathstl.c_str());
+
+    std::cout << "STEP file written to: " << outputPath << std::endl;
 }

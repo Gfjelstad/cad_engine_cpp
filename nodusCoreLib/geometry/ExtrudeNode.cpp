@@ -32,7 +32,7 @@ namespace nodus::core::geometry
             auto shape = child->Build();
             TopoDS_Face face = TopoDS::Face(shape);
 
-            auto prismMaker = BRepPrimAPI_MakePrism(face, extrusionVector, false, true);
+            auto prismMaker = BRepPrimAPI_MakePrism(face, extrusionVector);
             builder.Add(compound, prismMaker.Shape());
         }
 

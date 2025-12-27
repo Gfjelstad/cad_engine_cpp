@@ -7,7 +7,6 @@
 
 namespace nodus::core::geometry
 {
-
     template <typename T>
     std::pair<bool, T> try_convert_json(const nlohmann::json &j)
     {
@@ -68,6 +67,10 @@ namespace nodus::core::geometry
         }
 
         virtual TopoDS_Shape Build() = 0;
+
+        virtual std::string Render();
     };
+
+    std::shared_ptr<Node> CreateNode(const nlohmann::json &node, std::shared_ptr<Node> parent = nullptr);
 }
 #endif
